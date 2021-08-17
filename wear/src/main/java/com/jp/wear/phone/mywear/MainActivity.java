@@ -2,6 +2,7 @@ package com.jp.wear.phone.mywear;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -44,7 +45,7 @@ public class MainActivity extends Activity
 
     private final static String TAG = "Wear MainActivity";
     private TextView mTextView;
-    Button myButton;
+    Button myButton, Btn_sendlist;
     int num = 1;
     String datapath = "/data_path";
     float[] signosV = new float[4];
@@ -79,8 +80,8 @@ public class MainActivity extends Activity
 
         mTextView = findViewById(R.id.text);
         //send a message from the wear.  This one will not have response.
-        myButton = findViewById(R.id.wrbutton);
-        myButton.setOnClickListener(new View.OnClickListener() {
+        //myButton = findViewById(R.id.wrbutton);
+        /*myButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 String message = "Hello device " + num;
@@ -90,9 +91,11 @@ public class MainActivity extends Activity
                 sendArray();
                 num++;
             }
-        });
+        });*/
         // Enables Always-on
         //setAmbientEnabled();
+
+
     }
 
 
