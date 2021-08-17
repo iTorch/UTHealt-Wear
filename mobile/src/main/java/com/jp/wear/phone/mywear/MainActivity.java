@@ -6,6 +6,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
@@ -25,6 +26,18 @@ import com.google.android.gms.wearable.MessageEvent;
 import com.google.android.gms.wearable.PutDataMapRequest;
 import com.google.android.gms.wearable.PutDataRequest;
 import com.google.android.gms.wearable.Wearable;
+import com.jp.wear.phone.mywear.Body.VitalSignsBody;
+import com.jp.wear.phone.mywear.IO.HealtApiAdapter;
+import com.jp.wear.phone.mywear.Model.Persona;
+import com.jp.wear.phone.mywear.Model.VitalSigns;
+
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.Random;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class MainActivity extends Activity
         implements DataClient.OnDataChangedListener,
@@ -37,7 +50,8 @@ public class MainActivity extends Activity
     TextView logger, txtHr, txtTemp;
     String TAG = "Mobile MainActivity";
     int num = 1;
-    String m = "H";
+    float myhr;
+    float mytemp;
 
 
     @Override
@@ -78,11 +92,71 @@ public class MainActivity extends Activity
     //button listener
     @Override
     public void onClick(View v) {
-        String message = "Hello wearable " + num;
-        //Requires a new thread to avoid blocking the UI
-        sendData(message);
-        num++;
+
+//        String message = "Hello wearable " + num;
+//        //Requires a new thread to avoid blocking the UI
+//        sendData(message);
+//        num++;
+        getPesonas();
+        insertVitalSigns();
     }
+
+    private void getPesonas(){
+        Call<ArrayList<Persona>> call = HealtApiAdapter.getApiService().getPersonas();
+        call.enqueue(new Callback<ArrayList<Persona>>() {
+            @Override
+            public void onResponse(Call<ArrayList<Persona>> call, Response<ArrayList<Persona>> response) {
+                if (response.isSuccessful()){
+                    ArrayList<Persona> personas = response.body();
+                    Log.d("OnResponse: ", "Size of personas => " + personas.size());
+                }
+            }
+            @Override
+            public void onFailure(Call<ArrayList<Persona>> call, Throwable t) {
+
+            }
+        });
+    }
+
+    private void insertVitalSigns(){
+        VitalSignsBody v = new VitalSignsBody();
+        v.setTemperatura(mytemp);
+        v.setRitmo_cardiaco(myhr);
+        v.setCalorias_quemadas(randFloat(0, 1500));
+        v.setDistancia_recorrida(randFloat(0, 20));
+        v.setId_persona(1);
+        v.setOxigeno(randFloat(55, 110));
+        v.setPasos_diario(getRandomNumber(0, 1000));
+
+        Call<VitalSigns> vitalSignsCall = HealtApiAdapter.getApiService().registrarSignos(v);
+        vitalSignsCall.enqueue(new Callback<VitalSigns>() {
+            @Override
+            public void onResponse(Call<VitalSigns> call, Response<VitalSigns> response) {
+                if (response.isSuccessful()){
+                    VitalSigns vitalSigns = response.body();
+                    //Toast.makeText(MainActivity.this, vitalSigns.getId_persona(),Toast.LENGTH_LONG).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<VitalSigns> call, Throwable t) {
+
+            }
+        });
+    }
+
+    public static float randFloat(float min, float max) {
+        float a = 0;
+        Random rand = new Random();
+        //return Math.round(rand.nextFloat() * (max - min) + min * Math.pow(10, 2)) / Math.pow(10, 2);
+        return a;
+
+    }
+
+    private int getRandomNumber(int min,int max) {
+        return (new Random()).nextInt((max - min) + 1) + min;
+    }
+
 
     /**
      * Receives the data, note since we are using the same data base, we will also receive
@@ -127,11 +201,13 @@ public class MainActivity extends Activity
     }
 
     private void recibeTemperatura(float temp){
+        mytemp = temp;
         String t = Float.toString(temp);
         txtTemp.setText(t);
 
     }
     private void recibeHeart(float hr){
+        myhr = hr;
         String h = Float.toString(hr);
         txtHr.setText(h);
 
