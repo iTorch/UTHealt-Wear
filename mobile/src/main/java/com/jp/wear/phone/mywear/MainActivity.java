@@ -1,8 +1,10 @@
 package com.jp.wear.phone.mywear;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -46,7 +48,7 @@ public class MainActivity extends Activity
                 View.OnClickListener{
 
     String datapath = "/data_path";
-    Button mybutton;
+    Button mybutton, logout;
     TextView logger, txtHr, txtTemp;
     String TAG = "Mobile MainActivity";
     int num = 1;
@@ -59,11 +61,22 @@ public class MainActivity extends Activity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         //get the widgets
-        mybutton = findViewById(R.id.btnSend);
-        mybutton.setOnClickListener(this);
-        logger = findViewById(R.id.logger);
+        //mybutton = findViewById(R.id.btnSend);
+        //mybutton.setOnClickListener(this);
+        //logger = findViewById(R.id.logger);
         txtHr = findViewById(R.id.txtHr);
         txtTemp = findViewById(R.id.txtTemp);
+        //Button LogOut
+        logout = findViewById(R.id.logout);
+
+        logout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity( new Intent(MainActivity.this,LoginActivity.class));
+                finish();
+            }
+        });
+
     }
 
     // add data listener
@@ -244,7 +257,8 @@ public class MainActivity extends Activity
                     public void onFailure(@NonNull Exception e) {
                         Log.e(TAG, "Sending message failed: " + e);
                     }
-                })
-        ;
+                });
     }
+
+
 }
