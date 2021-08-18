@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">My Application</string>
+    <string name="app_name">UTHealt</string>
     <string name="btn_login">Iniciar Sesión</string>
     <string name="btn_register">Registrarme</string>
     <string name="txt_email">Correo Electrónico</string>
