@@ -2,7 +2,7 @@ package com.jp.wear.phone.mywear.Model;
 
 public class VitalSigns {
     private int id_signos_vitales;
-    private float oxigeno;
+    private int oxigeno;
     private float temperatura;
     private float calorias_quemadas;
     private int pasos_diario;
@@ -28,11 +28,11 @@ public class VitalSigns {
         this.id_signos_vitales = id_signos_vitales;
     }
 
-    public float getOxigeno() {
+    public int getOxigeno() {
         return oxigeno;
     }
 
-    public void setOxigeno(float oxigeno) {
+    public void setOxigeno(int oxigeno) {
         this.oxigeno = oxigeno;
     }
 

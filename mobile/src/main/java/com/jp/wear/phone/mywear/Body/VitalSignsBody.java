@@ -1,7 +1,9 @@
 package com.jp.wear.phone.mywear.Body;
 
+import android.util.Log;
+
 public class VitalSignsBody {
-    private float oxigeno;
+    private int oxigeno;
     private float temperatura;
     private float calorias_quemadas;
     private int pasos_diario;
@@ -19,11 +21,11 @@ public class VitalSignsBody {
 
 
 
-    public float getOxigeno() {
+    public int getOxigeno() {
         return oxigeno;
     }
 
-    public void setOxigeno(float oxigeno) {
+    public void setOxigeno(int oxigeno) {
         this.oxigeno = oxigeno;
     }
 
@@ -43,7 +45,7 @@ public class VitalSignsBody {
         this.calorias_quemadas = calorias_quemadas;
     }
 
-    public float getPasos_diario() {
+    public int getPasos_diario() {
         return pasos_diario;
     }
 
@@ -65,5 +67,9 @@ public class VitalSignsBody {
 
     public void setId_persona(int id_persona) {
         this.id_persona = id_persona;
+    }
+
+    public void all(){
+        Log.d("object", "all: "+ this.getId_persona()+"--" + this.getOxigeno()+ "--" + this.getTemperatura()+ "--" + this.getCalorias_quemadas()+ "--"+ this.getPasos_diario()+ "--"+this.getDistancia_recorrida()+ "--"+ this.getRitmo_cardiaco());
     }
 }
