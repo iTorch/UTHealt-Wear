@@ -8,6 +8,7 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -21,6 +22,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 
 import java.util.Arrays;
+import java.util.Random;
 import java.util.concurrent.ExecutionException;
 
 import com.google.android.gms.wearable.CapabilityClient;
@@ -50,17 +52,24 @@ public class MainActivity extends Activity
     String datapath = "/data_path";
     float[] signosV = new float[4];
     private int count = 0;
-    private TextView txtHr,txtTemp;
+    private TextView txtHr,txtTemp,nivelO, calorias, numP, disR;
     Sensor mHeartR, mTemp;
     SensorManager sensorManager;
-
+    private final Handler handler = new Handler();
+    private final int TIEMPO = 5000;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        enviarSignos();
 
         txtHr = findViewById(R.id.txtHr);
         txtTemp = findViewById(R.id.txtTemp);
+
+        nivelO = findViewById(R.id.nivelO);
+        calorias = findViewById(R.id.calorias);
+        numP = findViewById(R.id.numP);
+        disR = findViewById(R.id.disR);
 
         //Inicializar sensores
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
@@ -94,11 +103,20 @@ public class MainActivity extends Activity
         });*/
         // Enables Always-on
         //setAmbientEnabled();
-
-
     }
 
-
+    public void enviarSignos(){
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                sendOxigeno();
+                sendPasos();
+                sendCalorias();
+                sendDistancia();
+                handler.postDelayed(this, TIEMPO);
+            }
+        }, TIEMPO);
+    }
 
     //add listener.
     @Override
@@ -171,7 +189,118 @@ public class MainActivity extends Activity
         ;
     }
 
-    private void sendHR(float hr){
+    //Generar un numero random entero
+    private int getRandomNumber(int min,int max) {
+        return (new Random()).nextInt(max - min) + min;
+    }
+
+    //Generar un numero random float
+    public static float randFloat(float min, float max) {
+        Random rand = new Random();
+        float r = rand.nextFloat() * (max - min) + min;
+        float format = formatearDecimales(r, 2);
+        return format;
+    }
+
+    public static float formatearDecimales(float numero, Integer numeroDecimales) {
+        return (float) (Math.round(numero * Math.pow(10, numeroDecimales)) / Math.pow(10, numeroDecimales));
+    }
+
+    private void sendOxigeno(){
+        int oxigeno = getRandomNumber(55, 110);
+        nivelO.setText(""+oxigeno);
+        PutDataMapRequest dataMap = PutDataMapRequest.create("/oxigeno");
+        dataMap.getDataMap().putInt("oxigeno", oxigeno);
+        PutDataRequest request = dataMap.asPutDataRequest();
+        request.setUrgent();
+        Task<DataItem> dataItemTask = Wearable.getDataClient(this).putDataItem(request);
+        dataItemTask
+                .addOnSuccessListener(new OnSuccessListener<DataItem>() {
+                    @Override
+                    public void onSuccess(DataItem dataItem) {
+                        Log.d("Oxigeno", "Dato enviado");
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(Exception e) {
+                        Log.e(TAG, "Sending message failed: " + e);
+                    }
+                });
+    }
+
+    private void sendPasos(){
+        int pasos = getRandomNumber(0, 1500);
+        numP.setText(""+pasos);
+        PutDataMapRequest dataMap = PutDataMapRequest.create("/pasos");
+        dataMap.getDataMap().putInt("pasos", pasos);
+        PutDataRequest request = dataMap.asPutDataRequest();
+        request.setUrgent();
+        Task<DataItem> dataItemTask = Wearable.getDataClient(this).putDataItem(request);
+        dataItemTask
+                .addOnSuccessListener(new OnSuccessListener<DataItem>() {
+                    @Override
+                    public void onSuccess(DataItem dataItem) {
+                        Log.d("Pasos", "Dato enviado");
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(Exception e) {
+                        Log.e(TAG, "Sending message failed: " + e);
+                    }
+                });
+    }
+
+    private void sendCalorias(){
+        float mcalorias = randFloat(0, 1500);
+        String c = Float.toString(mcalorias);
+        calorias.setText(""+c);
+        PutDataMapRequest dataMap = PutDataMapRequest.create("/calorias");
+        dataMap.getDataMap().putFloat("calorias", mcalorias);
+        PutDataRequest request = dataMap.asPutDataRequest();
+        request.setUrgent();
+        Task<DataItem> dataItemTask = Wearable.getDataClient(this).putDataItem(request);
+        dataItemTask
+                .addOnSuccessListener(new OnSuccessListener<DataItem>() {
+                    @Override
+                    public void onSuccess(DataItem dataItem) {
+                        Log.d("Calorias", "Dato enviado");
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(Exception e) {
+                        Log.e(TAG, "Sending message failed: " + e);
+                    }
+                });
+    }
+
+    private void sendDistancia(){
+        float distancia = randFloat(0, 20);
+        String d = Float.toString(distancia);
+        disR.setText(""+d);
+        PutDataMapRequest dataMap = PutDataMapRequest.create("/distancia");
+        dataMap.getDataMap().putFloat("distancia", distancia);
+        PutDataRequest request = dataMap.asPutDataRequest();
+        request.setUrgent();
+        Task<DataItem> dataItemTask = Wearable.getDataClient(this).putDataItem(request);
+        dataItemTask
+                .addOnSuccessListener(new OnSuccessListener<DataItem>() {
+                    @Override
+                    public void onSuccess(DataItem dataItem) {
+                        Log.d("Calorias", "Dato enviado");
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(Exception e) {
+                        Log.e(TAG, "Sending message failed: " + e);
+                    }
+                });
+    }
+
+    private void sendHR(float hr ){
         PutDataMapRequest dataMap = PutDataMapRequest.create("/hr");
         dataMap.getDataMap().putFloat("hr", hr);
         PutDataRequest request = dataMap.asPutDataRequest();
@@ -212,46 +341,6 @@ public class MainActivity extends Activity
                     }
                 });
     }
-
-    private void increaseCounter(){
-        PutDataMapRequest putDataMapReq = PutDataMapRequest.create("/count");
-        putDataMapReq.getDataMap().putInt("key.count", count++);
-        PutDataRequest putDataReq = putDataMapReq.asPutDataRequest();
-        Task<DataItem> putDataTask = Wearable.getDataClient(this).putDataItem(putDataReq);
-        putDataTask.addOnSuccessListener(new OnSuccessListener<DataItem>() {
-            @Override
-            public void onSuccess(DataItem dataItem) {
-                Log.d("Couter", "onSuccess: " + dataItem);
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-
-            }
-        });
-    }
-    private void sendArray(){
-        signosV[0] = 10.1f;
-        signosV[1] = 20.2f;
-        signosV[2] = 30.3f;
-        signosV[3] = 40.4f;
-        PutDataMapRequest putDataMapReq = PutDataMapRequest.create("/array");
-        putDataMapReq.getDataMap().putFloatArray("key.array", signosV);
-        PutDataRequest putDataReq = putDataMapReq.asPutDataRequest();
-        Task<DataItem> putDataTask = Wearable.getDataClient(this).putDataItem(putDataReq);
-        putDataTask.addOnSuccessListener(new OnSuccessListener<DataItem>() {
-            @Override
-            public void onSuccess(DataItem dataItem) {
-                Log.d("Array", "onSuccess: " + dataItem);
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Log.d("Array", "onFailure: " + e);
-            }
-        });
-    }
-
 
     private SensorEventListener mSensorEventListener = new SensorEventListener() {
         @Override

@@ -2,7 +2,10 @@ package com.jp.wear.phone.mywear;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
@@ -30,12 +33,15 @@ import com.google.android.gms.wearable.PutDataRequest;
 import com.google.android.gms.wearable.Wearable;
 import com.jp.wear.phone.mywear.Body.VitalSignsBody;
 import com.jp.wear.phone.mywear.IO.HealtApiAdapter;
+import com.jp.wear.phone.mywear.Model.Login;
 import com.jp.wear.phone.mywear.Model.Persona;
 import com.jp.wear.phone.mywear.Model.VitalSigns;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -49,31 +55,41 @@ public class MainActivity extends Activity
 
     String datapath = "/data_path";
     Button mybutton, logout;
-    TextView logger, txtHr, txtTemp;
+    TextView logger, txtHr, txtTemp, DNO, DCQ, DPD, DDR;
     String TAG = "Mobile MainActivity";
     int num = 1;
-    float myhr;
-    float mytemp;
-
+    float myhr, mytemp, calorias, distancia;
+    int oxigeno, pasos;
+    Login login;
+    Timer timer = new Timer();
+    private final Handler handler = new Handler();
+    private final int TIEMPO = 5000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        login = (Login) getIntent().getSerializableExtra("user");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        enviarSignos();
         //get the widgets
         //mybutton = findViewById(R.id.btnSend);
         //mybutton.setOnClickListener(this);
         //logger = findViewById(R.id.logger);
         txtHr = findViewById(R.id.txtHr);
         txtTemp = findViewById(R.id.txtTemp);
+        DNO = findViewById(R.id.DNO);
+        DCQ = findViewById(R.id.DCQ);
+        DPD = findViewById(R.id.DPD);
+        DDR = findViewById(R.id.DDR);
         //Button LogOut
         logout = findViewById(R.id.logout);
 
         logout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity( new Intent(MainActivity.this,LoginActivity.class));
-                finish();
+                insertVitalSigns();
+                //startActivity( new Intent(MainActivity.this,LoginActivity.class));
+                //finish();
             }
         });
 
@@ -110,7 +126,7 @@ public class MainActivity extends Activity
 //        //Requires a new thread to avoid blocking the UI
 //        sendData(message);
 //        num++;
-        getPesonas();
+        //getPesonas();
         insertVitalSigns();
     }
 
@@ -135,39 +151,38 @@ public class MainActivity extends Activity
         VitalSignsBody v = new VitalSignsBody();
         v.setTemperatura(mytemp);
         v.setRitmo_cardiaco(myhr);
-        v.setCalorias_quemadas(randFloat(0, 1500));
-        v.setDistancia_recorrida(randFloat(0, 20));
-        v.setId_persona(1);
-        v.setOxigeno(randFloat(55, 110));
-        v.setPasos_diario(getRandomNumber(0, 1000));
+        v.setCalorias_quemadas(calorias);
+        v.setDistancia_recorrida(distancia);
+        v.setId_persona(login.getUser().getPersona().getId_persona());
+        v.setOxigeno(oxigeno);
+        v.setPasos_diario(pasos);
+        v.all();
 
-        Call<VitalSigns> vitalSignsCall = HealtApiAdapter.getApiService().registrarSignos(v);
-        vitalSignsCall.enqueue(new Callback<VitalSigns>() {
-            @Override
-            public void onResponse(Call<VitalSigns> call, Response<VitalSigns> response) {
-                if (response.isSuccessful()){
-                    VitalSigns vitalSigns = response.body();
-                    //Toast.makeText(MainActivity.this, vitalSigns.getId_persona(),Toast.LENGTH_LONG).show();
-                }
-            }
-
-            @Override
-            public void onFailure(Call<VitalSigns> call, Throwable t) {
-
-            }
-        });
+//        Call<VitalSigns> vitalSignsCall = HealtApiAdapter.getApiService().registrarSignos(v);
+//        vitalSignsCall.enqueue(new Callback<VitalSigns>() {
+//            @Override
+//            public void onResponse(Call<VitalSigns> call, Response<VitalSigns> response) {
+//                if (response.isSuccessful()){
+//                    VitalSigns vitalSigns = response.body();
+//                    //Toast.makeText(MainActivity.this, vitalSigns.getId_persona(),Toast.LENGTH_LONG).show();
+//                }
+//            }
+//
+//            @Override
+//            public void onFailure(Call<VitalSigns> call, Throwable t) {
+//
+//            }
+//        });
     }
 
-    public static float randFloat(float min, float max) {
-        float a = 0;
-        Random rand = new Random();
-        //return Math.round(rand.nextFloat() * (max - min) + min * Math.pow(10, 2)) / Math.pow(10, 2);
-        return a;
-
-    }
-
-    private int getRandomNumber(int min,int max) {
-        return (new Random()).nextInt((max - min) + 1) + min;
+    public void enviarSignos(){
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                insertVitalSigns();
+                handler.postDelayed(this, TIEMPO);
+            }
+        }, TIEMPO);
     }
 
 
@@ -192,15 +207,24 @@ public class MainActivity extends Activity
                 } else if(item.getUri().getPath().compareTo("/count") == 0){
                     DataMap dataMap = DataMapItem.fromDataItem(item).getDataMap();
                     updateCount(dataMap.getInt("key.count"));
-                } else if (item.getUri().getPath().compareTo("/array") == 0){
-                    DataMap dataMap = DataMapItem.fromDataItem(item).getDataMap();
-                    recibeArray(dataMap.getFloatArray("key.array"));
                 } else if(item.getUri().getPath().compareTo("/temp") == 0){
                     DataMap dataMap = DataMapItem.fromDataItem(item).getDataMap();
                     recibeTemperatura(dataMap.getFloat("temp"));
                 } else if (item.getUri().getPath().compareTo("/hr") == 0){
                     DataMap dataMap = DataMapItem.fromDataItem(item).getDataMap();
                     recibeHeart(dataMap.getFloat("hr"));
+                } else if (item.getUri().getPath().compareTo("/oxigeno") == 0){
+                    DataMap dataMap = DataMapItem.fromDataItem(item).getDataMap();
+                    recibeOxigeno(dataMap.getInt("oxigeno"));
+                } else if (item.getUri().getPath().compareTo("/calorias") == 0){
+                    DataMap dataMap = DataMapItem.fromDataItem(item).getDataMap();
+                    recibeCalorias(dataMap.getFloat("calorias"));
+                } else if (item.getUri().getPath().compareTo("/pasos") == 0){
+                    DataMap dataMap = DataMapItem.fromDataItem(item).getDataMap();
+                    recibePasos(dataMap.getInt("pasos"));
+                } else if (item.getUri().getPath().compareTo("/distancia") == 0){
+                    DataMap dataMap = DataMapItem.fromDataItem(item).getDataMap();
+                    recibeDistancia(dataMap.getFloat("distancia"));
                 }
                 else {
                     Log.e(TAG, "Unrecognized path: " + path);
@@ -223,10 +247,24 @@ public class MainActivity extends Activity
         myhr = hr;
         String h = Float.toString(hr);
         txtHr.setText(h);
-
     }
-    private void recibeArray(float[] floatArray) {
-        Log.d(TAG, "recibeArray: " + floatArray);
+    private void recibeOxigeno(int moxigeno){
+        oxigeno = moxigeno;
+        DNO.setText(""+oxigeno);
+    }
+    private void recibePasos(int mpasos){
+        pasos = mpasos;
+        DPD.setText(""+pasos);
+    }
+    private void recibeCalorias(float mcalorias){
+        calorias = mcalorias;
+        String c = Float.toString(calorias);
+        DCQ.setText(c);
+    }
+    private void recibeDistancia(float mdistancia){
+        distancia = mdistancia;
+        String d = Float.toString(distancia);
+        DDR.setText(d);
     }
 
     private void updateCount(int c) {
@@ -234,10 +272,7 @@ public class MainActivity extends Activity
     }
 
 
-    /**
-     * Sends the data.  Since it specify a client, everyone who is listening to the path, will
-     * get the data.
-     */
+
     private void sendData(String message) {
         PutDataMapRequest dataMap = PutDataMapRequest.create(datapath);
         dataMap.getDataMap().putString("message", message);
@@ -259,6 +294,4 @@ public class MainActivity extends Activity
                     }
                 });
     }
-
-
 }
