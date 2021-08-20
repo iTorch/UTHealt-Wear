@@ -53,7 +53,7 @@
                 android:id="@+id/txtHr"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/datos"
+                android:text=""
                 android:textSize="20sp"/>
         </LinearLayout>
     </RelativeLayout>
@@ -102,7 +102,7 @@
                 android:id="@+id/txtTemp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/datos"
+                android:text=""
                 android:textSize="20sp"/>
         </LinearLayout>
     </RelativeLayout>
@@ -151,7 +151,7 @@
                 android:id="@+id/DNO"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/datos"
+                android:text=""
                 android:textSize="20sp"/>
         </LinearLayout>
     </RelativeLayout>
@@ -200,7 +200,7 @@
                 android:id="@+id/DCQ"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/datos"
+                android:text=""
                 android:textSize="20sp"/>
         </LinearLayout>
     </RelativeLayout>
@@ -249,7 +249,7 @@
                 android:id="@+id/DPD"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/datos"
+                android:text=""
                 android:textSize="20sp"/>
         </LinearLayout>
     </RelativeLayout>
@@ -298,7 +298,7 @@
                 android:id="@+id/DDR"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/datos"
+                android:text=""
                 android:textSize="20sp"/>
         </LinearLayout>
     </RelativeLayout>
@@ -313,6 +313,6 @@
         android:textSize="16sp"
         android:paddingTop="8dp"
         android:paddingBottom="8dp"
-        android:background="@drawable/btn_logout"/>
-
+        android:background="@drawable/btn_logout"
+        />
 </LinearLayout>

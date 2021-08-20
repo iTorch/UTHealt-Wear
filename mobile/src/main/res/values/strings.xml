@@ -2,7 +2,7 @@
     <string name="app_name">UTHealt</string>
     <string name="btn_login">Iniciar Sesión</string>
     <string name="btn_register">Registrarme</string>
-    <string name="txt_email">Correo Electrónico</string>
+    <string name="txt_email">Username</string>
     <string name="txt_password">Contraseña</string>
     <string name="forgot_password">¿Olvidaste tu contraseña?</string>
     <string name="cuenta">¿Aún no tienes una cuenta?</string>

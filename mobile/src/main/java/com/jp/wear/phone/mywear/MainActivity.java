@@ -31,9 +31,11 @@ import com.google.android.gms.wearable.MessageEvent;
 import com.google.android.gms.wearable.PutDataMapRequest;
 import com.google.android.gms.wearable.PutDataRequest;
 import com.google.android.gms.wearable.Wearable;
+import com.jp.wear.phone.mywear.Body.LogoutBody;
 import com.jp.wear.phone.mywear.Body.VitalSignsBody;
 import com.jp.wear.phone.mywear.IO.HealtApiAdapter;
 import com.jp.wear.phone.mywear.Model.Login;
+import com.jp.wear.phone.mywear.Model.Logout;
 import com.jp.wear.phone.mywear.Model.Persona;
 import com.jp.wear.phone.mywear.Model.VitalSigns;
 
@@ -63,7 +65,7 @@ public class MainActivity extends Activity
     Login login;
     Timer timer = new Timer();
     private final Handler handler = new Handler();
-    private final int TIEMPO = 5000;
+    private final int TIEMPO = 600000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,9 +89,30 @@ public class MainActivity extends Activity
         logout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                insertVitalSigns();
-                //startActivity( new Intent(MainActivity.this,LoginActivity.class));
-                //finish();
+                LogoutBody logout = new LogoutBody();
+                logout.setToken(login.getToken());
+
+                Call<Logout> logoutCall = HealtApiAdapter.getApiService().Logout(logout);
+                logoutCall.enqueue(new Callback<Logout>() {
+                    @Override
+                    public void onResponse(Call<Logout> call, Response<Logout> response) {
+                        Logout logout = response.body();
+                        if (response.body() != null){
+                            if (response.isSuccessful()){
+                                if (response.code() == 200){
+                                    Toast.makeText(MainActivity.this,logout.getStatus(),Toast.LENGTH_LONG).show();
+                                    Intent menu = new Intent(MainActivity.this, LoginActivity.class);
+                                    startActivity(menu);
+                                }
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<Logout> call, Throwable t) {
+
+                    }
+                });
             }
         });
 
@@ -158,21 +181,21 @@ public class MainActivity extends Activity
         v.setPasos_diario(pasos);
         v.all();
 
-//        Call<VitalSigns> vitalSignsCall = HealtApiAdapter.getApiService().registrarSignos(v);
-//        vitalSignsCall.enqueue(new Callback<VitalSigns>() {
-//            @Override
-//            public void onResponse(Call<VitalSigns> call, Response<VitalSigns> response) {
-//                if (response.isSuccessful()){
-//                    VitalSigns vitalSigns = response.body();
-//                    //Toast.makeText(MainActivity.this, vitalSigns.getId_persona(),Toast.LENGTH_LONG).show();
-//                }
-//            }
-//
-//            @Override
-//            public void onFailure(Call<VitalSigns> call, Throwable t) {
-//
-//            }
-//        });
+        Call<VitalSigns> vitalSignsCall = HealtApiAdapter.getApiService().registrarSignos(v);
+        vitalSignsCall.enqueue(new Callback<VitalSigns>() {
+            @Override
+            public void onResponse(Call<VitalSigns> call, Response<VitalSigns> response) {
+                if (response.isSuccessful()){
+                    VitalSigns vitalSigns = response.body();
+                    //Toast.makeText(MainActivity.this, vitalSigns.getId_persona(),Toast.LENGTH_LONG).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<VitalSigns> call, Throwable t) {
+
+            }
+        });
     }
 
     public void enviarSignos(){

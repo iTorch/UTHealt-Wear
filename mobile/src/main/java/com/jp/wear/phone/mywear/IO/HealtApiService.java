@@ -1,8 +1,10 @@
 package com.jp.wear.phone.mywear.IO;
 
 import com.jp.wear.phone.mywear.Body.LoginBody;
+import com.jp.wear.phone.mywear.Body.LogoutBody;
 import com.jp.wear.phone.mywear.Body.VitalSignsBody;
 import com.jp.wear.phone.mywear.Model.Login;
+import com.jp.wear.phone.mywear.Model.Logout;
 import com.jp.wear.phone.mywear.Model.Persona;
 import com.jp.wear.phone.mywear.Model.VitalSigns;
 
@@ -22,4 +24,7 @@ public interface HealtApiService {
 
     @POST(".")
     Call<Login> Login(@Body LoginBody login);
+
+    @POST("logout/")
+    Call<Logout> Logout(@Body LogoutBody logout);
 }

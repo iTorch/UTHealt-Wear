@@ -47,22 +47,21 @@ public class MainActivity extends Activity
 
     private final static String TAG = "Wear MainActivity";
     private TextView mTextView;
-    Button myButton, Btn_sendlist;
-    int num = 1;
     String datapath = "/data_path";
-    float[] signosV = new float[4];
+    float hr = 80;
+    float temp = 70;
     private int count = 0;
     private TextView txtHr,txtTemp,nivelO, calorias, numP, disR;
     Sensor mHeartR, mTemp;
     SensorManager sensorManager;
     private final Handler handler = new Handler();
-    private final int TIEMPO = 5000;
+    private final int TIEMPO = 180000;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        enviarSignos();
 
+        enviarSignos();
         txtHr = findViewById(R.id.txtHr);
         txtTemp = findViewById(R.id.txtTemp);
 
@@ -71,7 +70,9 @@ public class MainActivity extends Activity
         numP = findViewById(R.id.numP);
         disR = findViewById(R.id.disR);
 
-        //Inicializar sensores
+        /**
+         * Inicializar Sensores
+         */
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         mHeartR = sensorManager.getDefaultSensor(Sensor.TYPE_HEART_RATE);
         if (mHeartR != null){
@@ -86,53 +87,44 @@ public class MainActivity extends Activity
         }else{
             txtTemp.setText("Temp not supported");
         }
-
         mTextView = findViewById(R.id.text);
-        //send a message from the wear.  This one will not have response.
-        //myButton = findViewById(R.id.wrbutton);
-        /*myButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String message = "Hello device " + num;
-                //Requires a new thread to avoid blocking the UI
-                sendData(message);
-                increaseCounter();
-                sendArray();
-                num++;
-            }
-        });*/
-        // Enables Always-on
-        //setAmbientEnabled();
     }
 
+    /**
+     * Metodo para ejecutar un AsyncTask
+     */
     public void enviarSignos(){
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
+                /*Metodos a ejecutar*/
                 sendOxigeno();
                 sendPasos();
                 sendCalorias();
                 sendDistancia();
+                sendHR(hr);
+                sendTemp(temp);
                 handler.postDelayed(this, TIEMPO);
             }
         }, TIEMPO);
     }
 
-    //add listener.
     @Override
     public void onResume() {
         super.onResume();
         Wearable.getDataClient(this).addListener(this);
     }
 
-    //remove listener
     @Override
     public void onPause() {
         super.onPause();
         Wearable.getDataClient(this).removeListener(this);
     }
 
-    //receive data from the path.
+    /**
+     * Metodo para recibir informacion por medio de la Api DataLayer Google.
+     * https://developer.android.com/training/wearables
+     */
     @Override
     public void onDataChanged(@NonNull DataEventBuffer dataEventBuffer) {
         Log.d(TAG, "onDataChanged: " + dataEventBuffer);
@@ -151,6 +143,16 @@ public class MainActivity extends Activity
 
                 } else if (path.equals("/hr")){
 
+                } else if (path.equals("/temp")){
+
+                } else if (path.equals("/oxigeno")){
+
+                } else if (path.equals("/pasos")){
+
+                } else if (path.equals("/calorias")){
+
+                } else if (path.equals("/distancia")){
+
                 }
                 else {
                     Log.e(TAG, "Unrecognized path: " + path);
@@ -164,37 +166,12 @@ public class MainActivity extends Activity
     }
 
     /**
-     * Sends the data, note this is a broadcast, so we will get the message as well.
+     * Metodos para generar numeros int y float, el valor float se puede formatear para quitar 0's.
      */
-    private void sendData(String message) {
-        PutDataMapRequest dataMap = PutDataMapRequest.create(datapath);
-        dataMap.getDataMap().putString("message", message);
-        PutDataRequest request = dataMap.asPutDataRequest();
-        request.setUrgent();
-
-        Task<DataItem> dataItemTask = Wearable.getDataClient(this).putDataItem(request);
-        dataItemTask
-                .addOnSuccessListener(new OnSuccessListener<DataItem>() {
-                    @Override
-                    public void onSuccess(DataItem dataItem) {
-                        Log.d("Mensaje", "Sending message was successful: " + dataItem);
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Log.e(TAG, "Sending message failed: " + e);
-                    }
-                })
-        ;
-    }
-
-    //Generar un numero random entero
     private int getRandomNumber(int min,int max) {
         return (new Random()).nextInt(max - min) + min;
     }
 
-    //Generar un numero random float
     public static float randFloat(float min, float max) {
         Random rand = new Random();
         float r = rand.nextFloat() * (max - min) + min;
@@ -206,6 +183,9 @@ public class MainActivity extends Activity
         return (float) (Math.round(numero * Math.pow(10, numeroDecimales)) / Math.pow(10, numeroDecimales));
     }
 
+    /**
+     * Metodo para enviar los distintos parametros, algunos valores son datos generados aleatoriamente.
+     */
     private void sendOxigeno(){
         int oxigeno = getRandomNumber(55, 110);
         nivelO.setText(""+oxigeno);
@@ -300,6 +280,27 @@ public class MainActivity extends Activity
                 });
     }
 
+    private void sendTemp(float temp){
+        PutDataMapRequest dataMap = PutDataMapRequest.create("/temp");
+        dataMap.getDataMap().putFloat("temp", temp);
+        PutDataRequest request = dataMap.asPutDataRequest();
+        request.setUrgent();
+        Task<DataItem> dataItemTask = Wearable.getDataClient(this).putDataItem(request);
+        dataItemTask
+                .addOnSuccessListener(new OnSuccessListener<DataItem>() {
+                    @Override
+                    public void onSuccess(DataItem dataItem) {
+                        //Log.d("temperatura", "Dato enviado");
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.e(TAG, "Sending message failed: " + e);
+                    }
+                });
+    }
+
     private void sendHR(float hr ){
         PutDataMapRequest dataMap = PutDataMapRequest.create("/hr");
         dataMap.getDataMap().putFloat("hr", hr);
@@ -321,45 +322,32 @@ public class MainActivity extends Activity
                 });
 
     }
-    private void sendTemp(float temp){
-        PutDataMapRequest dataMap = PutDataMapRequest.create("/temp");
-        dataMap.getDataMap().putFloat("temp", temp);
-        PutDataRequest request = dataMap.asPutDataRequest();
-        request.setUrgent();
-        Task<DataItem> dataItemTask = Wearable.getDataClient(this).putDataItem(request);
-        dataItemTask
-                .addOnSuccessListener(new OnSuccessListener<DataItem>() {
-                    @Override
-                    public void onSuccess(DataItem dataItem) {
-                        Log.d("temperatura", "Dato enviado");
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Log.e(TAG, "Sending message failed: " + e);
-                    }
-                });
-    }
 
+    /**
+     * Metodos para obtener los valores de sensores.
+     */
     private SensorEventListener mSensorEventListener = new SensorEventListener() {
+        /**
+         * Se utiliza para informar un nuevo valor.
+         */
         @Override
         public void onSensorChanged(SensorEvent sensorEvent) {
             Sensor sensor = sensorEvent.sensor;
-
             if (sensor.getType() == Sensor.TYPE_HEART_RATE){
-                float hr = sensorEvent.values[0];
+                hr = sensorEvent.values[0];
                 txtHr.setText("HR: " + hr);
                 sendHR(hr);
 
             } else if (sensor.getType() == Sensor.TYPE_AMBIENT_TEMPERATURE){
-                float temp = sensorEvent.values[0];
+                temp = sensorEvent.values[0];
                 txtTemp.setText("Temp: "+ temp);
                 sendTemp(temp);
             }
 
         }
-
+        /**
+         * Se puede utilizar cuando la exactitud del sensor cambia.
+         */
         @Override
         public void onAccuracyChanged(Sensor sensor, int i) {
 

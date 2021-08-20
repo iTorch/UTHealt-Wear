@@ -32,16 +32,17 @@ public class LoginActivity extends AppCompatActivity {
         setContentView(R.layout.activity_login);
         txtUser = findViewById(R.id.txt_user);
         txtPassword = findViewById(R.id.txt_password);
-        btn_ir_login=findViewById(R.id.btn_register);
+        //btn_ir_login=findViewById(R.id.btn_register);
         btn_sesion=findViewById(R.id.iniciarS);
 
+        /*
         btn_ir_login.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 startActivity( new Intent(LoginActivity.this,RegisterActivity.class));
                 finish();
             }
-        });
+        });*/
 
         btn_sesion.setOnClickListener(new View.OnClickListener() {
             @Override
